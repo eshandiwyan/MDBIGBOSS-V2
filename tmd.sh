@@ -11,13 +11,13 @@ NC='\033[0m' # No Color
 
 # Config directory
 CONFIG_DIR="$HOME/.config/tmd_config"
-DOWNLOAD_DIR="/sdcard/Youtube_Downloads"
+DOWNLOAD_DIR="/sdcard/TDownloads"
 CONFIG_FILE="$CONFIG_DIR/config"
 HISTORY_FILE="$CONFIG_DIR/history.log"
 FORMAT_FILE="$CONFIG_DIR/format"
 
 # Default settings
-DEFAULT_FORMAT="bestvideo[height<=1080]+bestaudio/best[height<=1080]"
+DEFAULT_FORMAT="bestvideo[height<=480]+bestaudio/best[height<=480]"
 THUMBNAILS=true
 METADATA=true
 SPONSORBLOCK=false
@@ -57,6 +57,37 @@ header() {
 
 # Download media function
 download_media() {
+	
+	# Change format/quality
+change_format() {
+    header
+    echo -e "${BLUE}Available format options:${NC}"
+    echo -e "1. Best quality (up to 1080p) [default]"
+    echo -e "2. Best quality (up to 720p)"
+    echo -e "3. Best quality (up to 480p)"
+    echo -e "4. Audio only (best quality)"
+    echo -e "5. Custom format (advanced)"
+    read -p "Select format option: " format_choice
+    
+    case "$format_choice" in
+        1) FORMAT="bestvideo[height<=1080]+bestaudio/best[height<=1080]" ;;
+        2) FORMAT="bestvideo[height<=720]+bestaudio/best[height<=720]" ;;
+        3) FORMAT="bestvideo[height<=480]+bestaudio/best[height<=480]" ;;
+        4) FORMAT="bestaudio" ;;
+        5)
+            echo -e "${YELLOW}Enter custom format string:${NC}"
+            read -p "> " custom_format
+            FORMAT="$custom_format"
+            ;;
+        *) echo -e "${RED}Invalid option, keeping current format.${NC}" ;;
+    esac
+    
+    echo "$FORMAT" > "$FORMAT_FILE"
+    echo -e "${GREEN}Format updated to: $FORMAT${NC}"
+    
+}
+	
+	
     local url="$1" playlist="$2" audio_only="$3"
     local cmd="yt-dlp --ignore-errors --newline --no-continue "
     cmd+="--output '$DOWNLOAD_DIR/%(title)s.%(ext)s' -f '$FORMAT' "
@@ -100,34 +131,7 @@ change_directory() {
     sleep 1
 }
 
-# Change format/quality
-change_format() {
-    header
-    echo -e "${BLUE}Available format options:${NC}"
-    echo -e "1. Best quality (up to 1080p) [default]"
-    echo -e "2. Best quality (up to 720p)"
-    echo -e "3. Best quality (up to 480p)"
-    echo -e "4. Audio only (best quality)"
-    echo -e "5. Custom format (advanced)"
-    read -p "Select format option: " format_choice
-    
-    case "$format_choice" in
-        1) FORMAT="bestvideo[height<=1080]+bestaudio/best[height<=1080]" ;;
-        2) FORMAT="bestvideo[height<=720]+bestaudio/best[height<=720]" ;;
-        3) FORMAT="bestvideo[height<=480]+bestaudio/best[height<=480]" ;;
-        4) FORMAT="bestaudio" ;;
-        5)
-            echo -e "${YELLOW}Enter custom format string:${NC}"
-            read -p "> " custom_format
-            FORMAT="$custom_format"
-            ;;
-        *) echo -e "${RED}Invalid option, keeping current format.${NC}" ;;
-    esac
-    
-    echo "$FORMAT" > "$FORMAT_FILE"
-    echo -e "${GREEN}Format updated to: $FORMAT${NC}"
-    sleep 1
-}
+
 
 # Toggle setting
 toggle_setting() {
